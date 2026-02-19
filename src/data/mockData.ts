@@ -1,7 +1,7 @@
 export interface Pizza {
   id: string; name: string; description: string; category: "salgada" | "doce";
-  ingredients: string[]; prices: { broto: number; P: number; M: number; G: number; familia: number };
-  active: boolean; image: string;
+  ingredients: string[]; priceG: number; priceBroto: number;
+  prepTime: number; active: boolean; image: string;
 }
 
 export interface Employee {
@@ -47,18 +47,18 @@ export interface FinancialEntry {
 }
 
 export const pizzas: Pizza[] = [
-  { id: "1", name: "Margherita", description: "Molho de tomate, mussarela, manjericão fresco", category: "salgada", ingredients: ["Molho de tomate", "Mussarela", "Manjericão"], prices: { broto: 22, P: 32, M: 42, G: 52, familia: 65 }, active: true, image: "🍕" },
-  { id: "2", name: "Calabresa", description: "Calabresa fatiada, cebola, azeitonas", category: "salgada", ingredients: ["Calabresa", "Cebola", "Azeitonas", "Mussarela"], prices: { broto: 24, P: 34, M: 44, G: 54, familia: 68 }, active: true, image: "🍕" },
-  { id: "3", name: "Portuguesa", description: "Presunto, ovos, cebola, azeitonas, ervilha", category: "salgada", ingredients: ["Presunto", "Ovos", "Cebola", "Azeitonas", "Ervilha", "Mussarela"], prices: { broto: 26, P: 36, M: 46, G: 56, familia: 70 }, active: true, image: "🍕" },
-  { id: "4", name: "Frango com Catupiry", description: "Frango desfiado com catupiry cremoso", category: "salgada", ingredients: ["Frango desfiado", "Catupiry", "Mussarela"], prices: { broto: 26, P: 36, M: 48, G: 58, familia: 72 }, active: true, image: "🍕" },
-  { id: "5", name: "Quatro Queijos", description: "Mussarela, provolone, gorgonzola, parmesão", category: "salgada", ingredients: ["Mussarela", "Provolone", "Gorgonzola", "Parmesão"], prices: { broto: 28, P: 38, M: 50, G: 60, familia: 75 }, active: true, image: "🍕" },
-  { id: "6", name: "Pepperoni", description: "Pepperoni importado com mussarela", category: "salgada", ingredients: ["Pepperoni", "Mussarela", "Orégano"], prices: { broto: 28, P: 40, M: 52, G: 62, familia: 78 }, active: true, image: "🍕" },
-  { id: "7", name: "Bacon Cheddar", description: "Bacon crocante, cheddar derretido, cebola caramelizada", category: "salgada", ingredients: ["Bacon", "Cheddar", "Cebola caramelizada"], prices: { broto: 30, P: 42, M: 54, G: 64, familia: 80 }, active: true, image: "🍕" },
-  { id: "8", name: "Vegetariana", description: "Brócolis, palmito, milho, tomate, champignon", category: "salgada", ingredients: ["Brócolis", "Palmito", "Milho", "Tomate", "Champignon"], prices: { broto: 24, P: 34, M: 44, G: 54, familia: 68 }, active: true, image: "🍕" },
-  { id: "9", name: "Lombo Canadense", description: "Lombo canadense, catupiry, cebola roxa", category: "salgada", ingredients: ["Lombo canadense", "Catupiry", "Cebola roxa"], prices: { broto: 28, P: 40, M: 52, G: 62, familia: 76 }, active: false, image: "🍕" },
-  { id: "10", name: "Chocolate com Morango", description: "Chocolate ao leite com morangos frescos", category: "doce", ingredients: ["Chocolate ao leite", "Morangos", "Leite condensado"], prices: { broto: 26, P: 36, M: 46, G: 56, familia: 70 }, active: true, image: "🍫" },
-  { id: "11", name: "Banana com Canela", description: "Banana caramelizada, canela e açúcar", category: "doce", ingredients: ["Banana", "Canela", "Açúcar", "Leite condensado"], prices: { broto: 22, P: 32, M: 42, G: 52, familia: 64 }, active: true, image: "🍌" },
-  { id: "12", name: "Romeu e Julieta", description: "Goiabada derretida com queijo minas", category: "doce", ingredients: ["Goiabada", "Queijo minas"], prices: { broto: 24, P: 34, M: 44, G: 54, familia: 68 }, active: true, image: "🧀" },
+  { id: "1", name: "Margherita", description: "Molho de tomate, mussarela, manjericão fresco", category: "salgada", ingredients: ["Molho de tomate", "Mussarela", "Manjericão"], priceG: 52, priceBroto: 26, prepTime: 25, active: true, image: "" },
+  { id: "2", name: "Calabresa", description: "Calabresa fatiada, cebola, azeitonas", category: "salgada", ingredients: ["Calabresa", "Cebola", "Azeitonas", "Mussarela"], priceG: 54, priceBroto: 27, prepTime: 25, active: true, image: "" },
+  { id: "3", name: "Portuguesa", description: "Presunto, ovos, cebola, azeitonas, ervilha", category: "salgada", ingredients: ["Presunto", "Ovos", "Cebola", "Azeitonas", "Ervilha", "Mussarela"], priceG: 56, priceBroto: 28, prepTime: 30, active: true, image: "" },
+  { id: "4", name: "Frango com Catupiry", description: "Frango desfiado com catupiry cremoso", category: "salgada", ingredients: ["Frango desfiado", "Catupiry", "Mussarela"], priceG: 58, priceBroto: 29, prepTime: 28, active: true, image: "" },
+  { id: "5", name: "Quatro Queijos", description: "Mussarela, provolone, gorgonzola, parmesão", category: "salgada", ingredients: ["Mussarela", "Provolone", "Gorgonzola", "Parmesão"], priceG: 60, priceBroto: 30, prepTime: 25, active: true, image: "" },
+  { id: "6", name: "Pepperoni", description: "Pepperoni importado com mussarela", category: "salgada", ingredients: ["Pepperoni", "Mussarela", "Orégano"], priceG: 62, priceBroto: 31, prepTime: 22, active: true, image: "" },
+  { id: "7", name: "Bacon Cheddar", description: "Bacon crocante, cheddar derretido, cebola caramelizada", category: "salgada", ingredients: ["Bacon", "Cheddar", "Cebola caramelizada"], priceG: 64, priceBroto: 32, prepTime: 28, active: true, image: "" },
+  { id: "8", name: "Vegetariana", description: "Brócolis, palmito, milho, tomate, champignon", category: "salgada", ingredients: ["Brócolis", "Palmito", "Milho", "Tomate", "Champignon"], priceG: 54, priceBroto: 27, prepTime: 25, active: true, image: "" },
+  { id: "9", name: "Lombo Canadense", description: "Lombo canadense, catupiry, cebola roxa", category: "salgada", ingredients: ["Lombo canadense", "Catupiry", "Cebola roxa"], priceG: 62, priceBroto: 31, prepTime: 30, active: false, image: "" },
+  { id: "10", name: "Chocolate com Morango", description: "Chocolate ao leite com morangos frescos", category: "doce", ingredients: ["Chocolate ao leite", "Morangos", "Leite condensado"], priceG: 56, priceBroto: 28, prepTime: 20, active: true, image: "" },
+  { id: "11", name: "Banana com Canela", description: "Banana caramelizada, canela e açúcar", category: "doce", ingredients: ["Banana", "Canela", "Açúcar", "Leite condensado"], priceG: 52, priceBroto: 26, prepTime: 18, active: true, image: "" },
+  { id: "12", name: "Romeu e Julieta", description: "Goiabada derretida com queijo minas", category: "doce", ingredients: ["Goiabada", "Queijo minas"], priceG: 54, priceBroto: 27, prepTime: 20, active: true, image: "" },
 ];
 
 export const employees: Employee[] = [
