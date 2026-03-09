@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      bebidas: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          price: number
+          stock_quantity: number
+          updated_at: string
+          volume: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          name: string
+          price?: number
+          stock_quantity?: number
+          updated_at?: string
+          volume?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          price?: number
+          stock_quantity?: number
+          updated_at?: string
+          volume?: string
+        }
+        Relationships: []
+      }
       pizzas: {
         Row: {
           active: boolean

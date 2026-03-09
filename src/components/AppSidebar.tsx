@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, Armchair,
   Truck, Users, Package, UserCog, Wallet, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Flame,
+  ChevronLeft, ChevronRight, Flame, Wine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Pedidos", icon: ClipboardList, path: "/pedidos" },
   { label: "Cardápio", icon: UtensilsCrossed, path: "/cardapio" },
+  { label: "Bebidas", icon: Wine, path: "/bebidas" },
   { label: "Mesas", icon: Armchair, path: "/mesas" },
   { label: "Delivery", icon: Truck, path: "/delivery" },
   { label: "Clientes", icon: Users, path: "/clientes" },
