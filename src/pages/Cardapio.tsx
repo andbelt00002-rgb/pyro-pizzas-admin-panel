@@ -146,7 +146,7 @@ export default function Cardapio() {
       {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "grid" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <div key={p.id} className="card-hover rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div key={p.id} className="card-hover rounded-2xl border border-border bg-card p-5 shadow-sm cursor-pointer" onClick={() => openEditForm(p)}>
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-muted flex items-center justify-center">
                   {p.image ? (
