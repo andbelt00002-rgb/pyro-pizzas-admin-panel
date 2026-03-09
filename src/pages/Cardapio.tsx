@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Edit, Trash2, Clock, ImagePlus } from "lucide-react";
+import { Plus, Edit, Trash2, Clock, ImagePlus, LayoutGrid, List } from "lucide-react";
 import { pizzas as initialPizzas, type Pizza } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
