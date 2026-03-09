@@ -156,7 +156,7 @@ export default function Cardapio() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} />
+                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} onClick={(e) => e.stopPropagation()} />
                   <span className={`text-xs font-medium ${p.active ? "text-green-600" : "text-muted-foreground"}`}>
                     {p.active ? "Ativo" : "Inativo"}
                   </span>
