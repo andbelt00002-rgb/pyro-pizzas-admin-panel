@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Edit, Trash2, Clock, ImagePlus } from "lucide-react";
+import { Plus, Edit, Trash2, Clock, ImagePlus, LayoutGrid, List } from "lucide-react";
 import { pizzas as initialPizzas, type Pizza } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,6 +13,7 @@ const tabs = ["Pizzas Salgadas", "Pizzas Doces", "Bordas", "Combos", "Promoçõe
 
 export default function Cardapio() {
   const [activeTab, setActiveTab] = useState<string>("Pizzas Salgadas");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showForm, setShowForm] = useState(false);
   const [editPizza, setEditPizza] = useState<Pizza | null>(null);
   const [pizzaList, setPizzaList] = useState<Pizza[]>(initialPizzas);
@@ -121,16 +122,31 @@ export default function Cardapio() {
             </button>
           ))}
         </div>
-        <Button className="rounded-xl" onClick={openAddForm}>
-          <Plus className="mr-1.5 h-4 w-4" /> Adicionar Pizza
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-xl border border-border overflow-hidden">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 transition-all duration-200 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 transition-all duration-200 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+          <Button className="rounded-xl" onClick={openAddForm}>
+            <Plus className="mr-1.5 h-4 w-4" /> Adicionar Pizza
+          </Button>
+        </div>
       </div>
 
-      {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && (
+      {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "grid" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
             <div key={p.id} className="card-hover rounded-2xl border border-border bg-card p-5 shadow-sm">
-              {/* Image */}
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-muted flex items-center justify-center">
                   {p.image ? (
@@ -140,27 +156,19 @@ export default function Cardapio() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch
-                    checked={p.active}
-                    onCheckedChange={() => handleToggleActive(p.id)}
-                  />
+                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} />
                   <span className={`text-xs font-medium ${p.active ? "text-green-600" : "text-muted-foreground"}`}>
                     {p.active ? "Ativo" : "Inativo"}
                   </span>
                 </div>
               </div>
-
               <h3 className="text-base font-semibold text-foreground">{p.name}</h3>
               <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
-
-              {/* Ingredients */}
               <div className="mt-3 flex flex-wrap gap-1">
                 {p.ingredients.map((ing) => (
                   <span key={ing} className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{ing}</span>
                 ))}
               </div>
-
-              {/* Prices - only G and Broto */}
               <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
                 <div className="rounded-lg bg-muted/60 py-2">
                   <p className="text-[10px] text-muted-foreground">Grande</p>
@@ -171,16 +179,12 @@ export default function Cardapio() {
                   <p className="text-sm font-semibold">R$ {p.priceBroto.toFixed(2)}</p>
                 </div>
               </div>
-
-              {/* Prep time */}
               {p.prepTime > 0 && (
                 <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
                   <span>{p.prepTime} min</span>
                 </div>
               )}
-
-              {/* Actions */}
               <div className="mt-3 flex gap-2">
                 <button onClick={() => openEditForm(p)} className="flex-1 rounded-lg border border-border py-1.5 text-xs font-medium transition-all duration-200 hover:bg-muted">
                   <Edit className="mr-1 inline h-3 w-3" /> Editar
@@ -191,6 +195,77 @@ export default function Cardapio() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "list" && (
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
+                <th className="px-4 py-3">Foto</th>
+                <th className="px-4 py-3">Nome</th>
+                <th className="px-4 py-3 hidden md:table-cell">Ingredientes</th>
+                <th className="px-4 py-3">Grande</th>
+                <th className="px-4 py-3">Broto</th>
+                <th className="px-4 py-3 hidden sm:table-cell">Preparo</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((p) => (
+                <tr key={p.id} className="border-b last:border-0 transition-all duration-200 hover:bg-muted/30">
+                  <td className="px-4 py-3">
+                    <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                      {p.image ? (
+                        <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-lg">🍕</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-foreground">{p.name}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <div className="flex flex-wrap gap-1 max-w-[200px]">
+                      {p.ingredients.slice(0, 3).map((ing) => (
+                        <span key={ing} className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{ing}</span>
+                      ))}
+                      {p.ingredients.length > 3 && (
+                        <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">+{p.ingredients.length - 3}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-semibold">R$ {p.priceG.toFixed(2)}</td>
+                  <td className="px-4 py-3 font-semibold">R$ {p.priceBroto.toFixed(2)}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">
+                    {p.prepTime > 0 ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{p.prepTime} min</span> : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} />
+                      <span className={`text-xs font-medium ${p.active ? "text-green-600" : "text-muted-foreground"}`}>
+                        {p.active ? "Ativo" : "Inativo"}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button onClick={() => openEditForm(p)} className="rounded-lg border border-border p-1.5 text-xs transition-all duration-200 hover:bg-muted">
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => handleDelete(p.id)} className="rounded-lg border border-destructive/30 p-1.5 text-xs text-destructive transition-all duration-200 hover:bg-destructive/10">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
