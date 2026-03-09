@@ -352,14 +352,35 @@ export default function Cardapio() {
               <Input placeholder="Ex: 25" type="number" value={formPrepTime} onChange={(e) => setFormPrepTime(e.target.value)} className="rounded-xl" />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">URL da Imagem</Label>
-              <div className="flex gap-2">
-                <Input placeholder="https://..." value={formImage} onChange={(e) => setFormImage(e.target.value)} className="rounded-xl flex-1" />
-                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
+              <Label className="text-xs text-muted-foreground">Imagem do Produto</Label>
+              <div className="flex items-center gap-3">
+                <div className="h-20 w-20 flex-shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
                   {formImage ? (
                     <img src={formImage} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
-                    <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted">
+                    <ImagePlus className="h-4 w-4" />
+                    {formImage ? "Trocar imagem" : "Escolher imagem"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => setFormImage(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                  {formImage && (
+                    <button type="button" onClick={() => setFormImage("")} className="ml-2 text-xs text-destructive hover:underline">Remover</button>
                   )}
                 </div>
               </div>
