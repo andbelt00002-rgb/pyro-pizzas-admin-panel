@@ -186,10 +186,10 @@ export default function Cardapio() {
                 </div>
               )}
               <div className="mt-3 flex gap-2">
-                <button onClick={() => openEditForm(p)} className="flex-1 rounded-lg border border-border py-1.5 text-xs font-medium transition-all duration-200 hover:bg-muted">
+                <button onClick={(e) => { e.stopPropagation(); openEditForm(p); }} className="flex-1 rounded-lg border border-border py-1.5 text-xs font-medium transition-all duration-200 hover:bg-muted">
                   <Edit className="mr-1 inline h-3 w-3" /> Editar
                 </button>
-                <button onClick={() => handleDelete(p.id)} className="rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive transition-all duration-200 hover:bg-destructive/10">
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} className="rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive transition-all duration-200 hover:bg-destructive/10">
                   <Trash2 className="h-3 w-3" />
                 </button>
               </div>
