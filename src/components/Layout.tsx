@@ -24,6 +24,7 @@ const navItems = [
   { label: "Dashboard", path: "/dashboard" },
   { label: "Pedidos", path: "/pedidos" },
   { label: "Cardápio", path: "/cardapio" },
+  { label: "Bebidas", path: "/bebidas" },
   { label: "Mesas", path: "/mesas" },
   { label: "Delivery", path: "/delivery" },
   { label: "Clientes", path: "/clientes" },
