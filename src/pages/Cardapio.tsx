@@ -13,6 +13,7 @@ const tabs = ["Pizzas Salgadas", "Pizzas Doces", "Bordas", "Combos", "Promoçõe
 
 export default function Cardapio() {
   const [activeTab, setActiveTab] = useState<string>("Pizzas Salgadas");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showForm, setShowForm] = useState(false);
   const [editPizza, setEditPizza] = useState<Pizza | null>(null);
   const [pizzaList, setPizzaList] = useState<Pizza[]>(initialPizzas);
