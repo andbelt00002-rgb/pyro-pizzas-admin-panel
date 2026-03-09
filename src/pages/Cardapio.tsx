@@ -122,10 +122,25 @@ export default function Cardapio() {
             </button>
           ))}
         </div>
-        <Button className="rounded-xl" onClick={openAddForm}>
-          <Plus className="mr-1.5 h-4 w-4" /> Adicionar Pizza
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-xl border border-border overflow-hidden">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 transition-all duration-200 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 transition-all duration-200 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+          <Button className="rounded-xl" onClick={openAddForm}>
+            <Plus className="mr-1.5 h-4 w-4" /> Adicionar Pizza
+          </Button>
+        </div>
 
       {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
