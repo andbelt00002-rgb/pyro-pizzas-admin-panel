@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, Armchair,
   Truck, Users, Package, UserCog, Wallet, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Flame,
+  ChevronLeft, ChevronRight, Flame, Wine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
