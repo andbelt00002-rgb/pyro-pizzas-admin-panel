@@ -146,7 +146,7 @@ export default function Cardapio() {
       {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "grid" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <div key={p.id} className="card-hover rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div key={p.id} className="card-hover rounded-2xl border border-border bg-card p-5 shadow-sm cursor-pointer" onClick={() => openEditForm(p)}>
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-muted flex items-center justify-center">
                   {p.image ? (
@@ -156,7 +156,7 @@ export default function Cardapio() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} />
+                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} onClick={(e) => e.stopPropagation()} />
                   <span className={`text-xs font-medium ${p.active ? "text-green-600" : "text-muted-foreground"}`}>
                     {p.active ? "Ativo" : "Inativo"}
                   </span>
@@ -186,10 +186,10 @@ export default function Cardapio() {
                 </div>
               )}
               <div className="mt-3 flex gap-2">
-                <button onClick={() => openEditForm(p)} className="flex-1 rounded-lg border border-border py-1.5 text-xs font-medium transition-all duration-200 hover:bg-muted">
+                <button onClick={(e) => { e.stopPropagation(); openEditForm(p); }} className="flex-1 rounded-lg border border-border py-1.5 text-xs font-medium transition-all duration-200 hover:bg-muted">
                   <Edit className="mr-1 inline h-3 w-3" /> Editar
                 </button>
-                <button onClick={() => handleDelete(p.id)} className="rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive transition-all duration-200 hover:bg-destructive/10">
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} className="rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive transition-all duration-200 hover:bg-destructive/10">
                   <Trash2 className="h-3 w-3" />
                 </button>
               </div>
@@ -352,14 +352,35 @@ export default function Cardapio() {
               <Input placeholder="Ex: 25" type="number" value={formPrepTime} onChange={(e) => setFormPrepTime(e.target.value)} className="rounded-xl" />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">URL da Imagem</Label>
-              <div className="flex gap-2">
-                <Input placeholder="https://..." value={formImage} onChange={(e) => setFormImage(e.target.value)} className="rounded-xl flex-1" />
-                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
+              <Label className="text-xs text-muted-foreground">Imagem do Produto</Label>
+              <div className="flex items-center gap-3">
+                <div className="h-20 w-20 flex-shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
                   {formImage ? (
                     <img src={formImage} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
-                    <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted">
+                    <ImagePlus className="h-4 w-4" />
+                    {formImage ? "Trocar imagem" : "Escolher imagem"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => setFormImage(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                  {formImage && (
+                    <button type="button" onClick={() => setFormImage("")} className="ml-2 text-xs text-destructive hover:underline">Remover</button>
                   )}
                 </div>
               </div>
