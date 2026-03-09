@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { Plus, Edit, Trash2, Clock, ImagePlus, LayoutGrid, List } from "lucide-react";
-import { pizzas as initialPizzas, type Pizza } from "@/data/mockData";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Edit, Trash2, Clock, ImagePlus, LayoutGrid, List, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,15 +7,32 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const tabs = ["Pizzas Salgadas", "Pizzas Doces", "Bordas", "Combos", "Promoções"] as const;
+
+interface PizzaRow {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  ingredients: string[];
+  price_g: number;
+  price_broto: number;
+  prep_time: number;
+  active: boolean;
+  image_url: string;
+}
 
 export default function Cardapio() {
   const [activeTab, setActiveTab] = useState<string>("Pizzas Salgadas");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showForm, setShowForm] = useState(false);
-  const [editPizza, setEditPizza] = useState<Pizza | null>(null);
-  const [pizzaList, setPizzaList] = useState<Pizza[]>(initialPizzas);
+  const [editPizza, setEditPizza] = useState<PizzaRow | null>(null);
+  const [pizzaList, setPizzaList] = useState<PizzaRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -26,8 +42,28 @@ export default function Cardapio() {
   const [formPriceG, setFormPriceG] = useState("");
   const [formPriceBroto, setFormPriceBroto] = useState("");
   const [formPrepTime, setFormPrepTime] = useState("");
-  const [formImage, setFormImage] = useState("");
+  const [formImageUrl, setFormImageUrl] = useState("");
+  const [formImageFile, setFormImageFile] = useState<File | null>(null);
+  const [formImagePreview, setFormImagePreview] = useState("");
   const [formActive, setFormActive] = useState(true);
+
+  const fetchPizzas = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("pizzas")
+      .select("*")
+      .order("name");
+    if (error) {
+      toast.error("Erro ao carregar pizzas");
+      console.error(error);
+    } else {
+      setPizzaList(data as PizzaRow[]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchPizzas();
+  }, [fetchPizzas]);
 
   const filtered = activeTab === "Pizzas Salgadas"
     ? pizzaList.filter((p) => p.category === "salgada")
@@ -55,55 +91,108 @@ export default function Cardapio() {
     setFormPriceG("");
     setFormPriceBroto("");
     setFormPrepTime("");
-    setFormImage("");
+    setFormImageUrl("");
+    setFormImageFile(null);
+    setFormImagePreview("");
     setFormActive(true);
     setShowForm(true);
   };
 
-  const openEditForm = (p: Pizza) => {
+  const openEditForm = (p: PizzaRow) => {
     setEditPizza(p);
     setFormName(p.name);
     setFormDescription(p.description);
-    setFormCategory(p.category);
+    setFormCategory(p.category as "salgada" | "doce");
     setFormIngredients(p.ingredients.join(", "));
-    setFormPriceG(String(p.priceG));
-    setFormPriceBroto(String(p.priceBroto));
-    setFormPrepTime(String(p.prepTime));
-    setFormImage(p.image);
+    setFormPriceG(String(p.price_g));
+    setFormPriceBroto(String(p.price_broto));
+    setFormPrepTime(String(p.prep_time));
+    setFormImageUrl(p.image_url);
+    setFormImageFile(null);
+    setFormImagePreview(p.image_url);
     setFormActive(p.active);
     setShowForm(true);
   };
 
-  const handleSave = () => {
+  const uploadImage = async (file: File): Promise<string> => {
+    const ext = file.name.split(".").pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("pizza-images")
+      .upload(fileName, file, { upsert: true });
+    if (error) throw error;
+    const { data } = supabase.storage.from("pizza-images").getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  const handleSave = async () => {
     if (!formName.trim() || !formIngredients.trim()) return;
+    setSaving(true);
 
-    const pizzaData: Pizza = {
-      id: editPizza?.id || String(Date.now()),
-      name: formName,
-      description: formDescription,
-      category: formCategory,
-      ingredients: formIngredients.split(",").map((i) => i.trim()).filter(Boolean),
-      priceG: Number(formPriceG) || 0,
-      priceBroto: Number(formPriceBroto) || 0,
-      prepTime: Number(formPrepTime) || 0,
-      image: formImage,
-      active: formActive,
-    };
+    try {
+      let imageUrl = formImageUrl;
+      if (formImageFile) {
+        imageUrl = await uploadImage(formImageFile);
+      }
 
-    if (editPizza) {
-      setPizzaList((prev) => prev.map((p) => (p.id === editPizza.id ? pizzaData : p)));
-    } else {
-      setPizzaList((prev) => [...prev, pizzaData]);
+      const pizzaData = {
+        name: formName,
+        description: formDescription,
+        category: formCategory,
+        ingredients: formIngredients.split(",").map((i) => i.trim()).filter(Boolean),
+        price_g: Number(formPriceG) || 0,
+        price_broto: Number(formPriceBroto) || 0,
+        prep_time: Number(formPrepTime) || 0,
+        image_url: imageUrl,
+        active: formActive,
+      };
+
+      if (editPizza) {
+        const { error } = await supabase.from("pizzas").update(pizzaData).eq("id", editPizza.id);
+        if (error) throw error;
+        toast.success("Pizza atualizada!");
+      } else {
+        const { error } = await supabase.from("pizzas").insert(pizzaData);
+        if (error) throw error;
+        toast.success("Pizza adicionada!");
+      }
+
+      setShowForm(false);
+      fetchPizzas();
+    } catch (err: any) {
+      toast.error("Erro ao salvar: " + err.message);
+    } finally {
+      setSaving(false);
     }
-    setShowForm(false);
   };
 
-  const handleToggleActive = (id: string) => {
-    setPizzaList((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
+  const handleToggleActive = async (p: PizzaRow) => {
+    const { error } = await supabase.from("pizzas").update({ active: !p.active }).eq("id", p.id);
+    if (error) {
+      toast.error("Erro ao atualizar status");
+    } else {
+      setPizzaList((prev) => prev.map((item) => (item.id === p.id ? { ...item, active: !item.active } : item)));
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setPizzaList((prev) => prev.filter((p) => p.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("pizzas").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir pizza");
+    } else {
+      setPizzaList((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Pizza excluída!");
+    }
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setFormImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -143,20 +232,26 @@ export default function Cardapio() {
         </div>
       </div>
 
-      {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "grid" && (
+      {loading && (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {!loading && (activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "grid" && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
             <div key={p.id} className="card-hover rounded-2xl border border-border bg-card p-5 shadow-sm cursor-pointer" onClick={() => openEditForm(p)}>
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-muted flex items-center justify-center">
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
                   ) : (
                     <span className="text-3xl">🍕</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} onClick={(e) => e.stopPropagation()} />
+                  <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p)} onClick={(e) => e.stopPropagation()} />
                   <span className={`text-xs font-medium ${p.active ? "text-green-600" : "text-muted-foreground"}`}>
                     {p.active ? "Ativo" : "Inativo"}
                   </span>
@@ -172,17 +267,17 @@ export default function Cardapio() {
               <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
                 <div className="rounded-lg bg-muted/60 py-2">
                   <p className="text-[10px] text-muted-foreground">Grande</p>
-                  <p className="text-sm font-semibold">R$ {p.priceG.toFixed(2)}</p>
+                  <p className="text-sm font-semibold">R$ {Number(p.price_g).toFixed(2)}</p>
                 </div>
                 <div className="rounded-lg bg-muted/60 py-2">
                   <p className="text-[10px] text-muted-foreground">Broto</p>
-                  <p className="text-sm font-semibold">R$ {p.priceBroto.toFixed(2)}</p>
+                  <p className="text-sm font-semibold">R$ {Number(p.price_broto).toFixed(2)}</p>
                 </div>
               </div>
-              {p.prepTime > 0 && (
+              {p.prep_time > 0 && (
                 <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
-                  <span>{p.prepTime} min</span>
+                  <span>{p.prep_time} min</span>
                 </div>
               )}
               <div className="mt-3 flex gap-2">
@@ -198,7 +293,7 @@ export default function Cardapio() {
         </div>
       )}
 
-      {(activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "list" && (
+      {!loading && (activeTab === "Pizzas Salgadas" || activeTab === "Pizzas Doces") && viewMode === "list" && (
         <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -215,11 +310,11 @@ export default function Cardapio() {
             </thead>
             <tbody>
               {filtered.map((p) => (
-                <tr key={p.id} className="border-b last:border-0 transition-all duration-200 hover:bg-muted/30">
+                <tr key={p.id} className="border-b last:border-0 transition-all duration-200 hover:bg-muted/30 cursor-pointer" onClick={() => openEditForm(p)}>
                   <td className="px-4 py-3">
                     <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-muted flex items-center justify-center">
-                      {p.image ? (
-                        <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
                       ) : (
                         <span className="text-lg">🍕</span>
                       )}
@@ -239,20 +334,20 @@ export default function Cardapio() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-semibold">R$ {p.priceG.toFixed(2)}</td>
-                  <td className="px-4 py-3 font-semibold">R$ {p.priceBroto.toFixed(2)}</td>
+                  <td className="px-4 py-3 font-semibold">R$ {Number(p.price_g).toFixed(2)}</td>
+                  <td className="px-4 py-3 font-semibold">R$ {Number(p.price_broto).toFixed(2)}</td>
                   <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">
-                    {p.prepTime > 0 ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{p.prepTime} min</span> : "—"}
+                    {p.prep_time > 0 ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{p.prep_time} min</span> : "—"}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
-                      <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p.id)} />
+                      <Switch checked={p.active} onCheckedChange={() => handleToggleActive(p)} />
                       <span className={`text-xs font-medium ${p.active ? "text-green-600" : "text-muted-foreground"}`}>
                         {p.active ? "Ativo" : "Inativo"}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => openEditForm(p)} className="rounded-lg border border-border p-1.5 text-xs transition-all duration-200 hover:bg-muted">
                         <Edit className="h-3.5 w-3.5" />
@@ -355,8 +450,8 @@ export default function Cardapio() {
               <Label className="text-xs text-muted-foreground">Imagem do Produto</Label>
               <div className="flex items-center gap-3">
                 <div className="h-20 w-20 flex-shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border">
-                  {formImage ? (
-                    <img src={formImage} alt="Preview" className="h-full w-full object-cover" />
+                  {formImagePreview ? (
+                    <img src={formImagePreview} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
                     <ImagePlus className="h-5 w-5 text-muted-foreground" />
                   )}
@@ -364,23 +459,16 @@ export default function Cardapio() {
                 <div className="flex-1">
                   <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted">
                     <ImagePlus className="h-4 w-4" />
-                    {formImage ? "Trocar imagem" : "Escolher imagem"}
+                    {formImagePreview ? "Trocar imagem" : "Escolher imagem"}
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setFormImage(reader.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
+                      onChange={handleImageFileChange}
                     />
                   </label>
-                  {formImage && (
-                    <button type="button" onClick={() => setFormImage("")} className="ml-2 text-xs text-destructive hover:underline">Remover</button>
+                  {formImagePreview && (
+                    <button type="button" onClick={() => { setFormImageFile(null); setFormImagePreview(""); setFormImageUrl(""); }} className="ml-2 text-xs text-destructive hover:underline">Remover</button>
                   )}
                 </div>
               </div>
@@ -389,8 +477,8 @@ export default function Cardapio() {
               <Label className="text-sm">Pizza ativa</Label>
               <Switch checked={formActive} onCheckedChange={setFormActive} />
             </div>
-            <Button className="w-full rounded-xl" onClick={handleSave} disabled={!formName.trim() || !formIngredients.trim()}>
-              Salvar
+            <Button className="w-full rounded-xl" onClick={handleSave} disabled={!formName.trim() || !formIngredients.trim() || saving}>
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : "Salvar"}
             </Button>
           </div>
         </DialogContent>
